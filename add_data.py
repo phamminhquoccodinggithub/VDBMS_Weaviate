@@ -107,10 +107,37 @@ def demo_query(client: WeaviateClient):
         print(f"\t\t {q} \n")
         print(f"{'*'*10} \t RESULTS: \t {'*'*10}\n")
         for r in response.objects:
+            print(r.uuid)
             print(r.properties["filename"])
             print(r.properties['description'])
             print(r.properties['conclusion'])
     return True
+
+
+def update_data(client: WeaviateClient, uuid, update_props: dict):
+    """
+    Updates data in the collection based on filename or UUID.
+
+    Args:
+        client: Weaviate client.
+        uuid: UUID to identify the object.
+        update_props: Dictionary containing properties to update.
+    """
+    mm_coll = client.collections.get(COLLECTION_NAME)
+    
+    mm_coll.data.update(uuid=uuid, properties=update_props)
+
+
+def delete_data(client: WeaviateClient, uuid):
+    """
+    Delete data in the collection based on  UUID.
+
+    Args:
+        uuid.
+    """
+    mm_coll = client.collections.get(COLLECTION_NAME)
+    
+    mm_coll.data.delete_by_id(uuid=uuid)
 
 
 def main():
@@ -118,8 +145,16 @@ def main():
     delete_existing(client)
     define_collection(client)
     import_data(client)
-    demo_query(client)
+    # demo_query(client)
 
+    # Example update by filename:
+    # update_data(client, "7d5663f3-9295-508d-9171-761c20307c8a", {"description": "Updated Description", "conclusion":"Updated Conclusion"})
+    # demo_query(client)
+    # delete_data(client, "7d5663f3-9295-508d-9171-761c20307c8a")
+    # demo_query(client)
+    # Example update by UUID (you'd need to know the UUID):
+    # example_uuid = "YOUR_UUID_HERE" # Replace with valid uuid
+    # update_data(client, example_uuid, {"description": "Updated Description from UUID"}, by_filename=False)
 
 if __name__ == "__main__":
     main()

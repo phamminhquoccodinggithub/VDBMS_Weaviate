@@ -4,6 +4,7 @@ import weaviate.classes as wvc
 import streamlit as st
 import base64
 from add_data import COLLECTION_NAME
+from add_data import update_data, delete_data
 
 client = weaviate.connect_to_local()
 
@@ -81,12 +82,26 @@ if search_text != "" or img is not None:
             img = imgpath.read_bytes()
             st.image(img)
 
-            # Show des + conclusion
+            # Show description + conclusion
             st.write(f'{r.properties["description"]}')
             st.markdown(f'<span style="color:green;">{r.properties["conclusion"]}</span>', unsafe_allow_html=True)
 
-            # # Show distance
-            # st.markdown(f'<span style="color:blue;">Distance: {r.metadata.distance:.3f}</span>', unsafe_allow_html=True)
+            # Update and Delete buttons
+            with st.form(key=f'update_form_{r.uuid}'):
+                new_description = st.text_input(f'New description for {r.properties["filename"]}')
+                new_conclusion = st.text_input(f'New conclusion for {r.properties["filename"]}')
+                update_submit = st.form_submit_button(label='Update')
+                if update_submit:
+                    if new_description and new_conclusion:
+                        update_data(client, r.uuid, {"description": new_description, "conclusion": new_conclusion})
+                        st.success(f'{r.properties["filename"]} updated successfully!')
+
+            if st.button(f'Delete {r.properties["filename"]}', key=f'delete-{r.uuid}'):
+                delete_data(client, r.uuid)
+                st.success(f'{r.properties["filename"]} deleted successfully!')
+
+            # Show distance
+            st.markdown(f'<span style="color:blue;">Distance: {r.metadata.distance:.3f}</span>', unsafe_allow_html=True)
 
 # Hide the Streamlit menu/popup - from https://discuss.streamlit.io/t/removing-the-deploy-button/53621/2
 st.markdown("""
